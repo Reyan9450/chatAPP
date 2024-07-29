@@ -4,6 +4,7 @@ import generateToken from '../utils/generateToken.js';
 export const login = async (req, res) => {
     try {
         const { userName, password } = req.body;
+        // console.log(userName, password)
         if (!userName || !password) {
            
             return res.status(400).json({ msg: "All fields are required" });
@@ -20,7 +21,7 @@ export const login = async (req, res) => {
 
         generateToken(user._id, res);
 
-        res.send({ user: user.fullName, msg: "Login Successful" });
+        res.send({ user: user.fullName, msg: "Login Successful",_id:user._id ,profilePic:user.profilePic});
 
     }
     catch (error) {
@@ -34,7 +35,7 @@ export const signup = async (req, res) => {
         const { fullName, userName, password, confirmPassword, gender } = req.body;
 
         // Debug logging
-        console.log(fullName, userName, password, confirmPassword, gender);
+        // console.log(fullName, userName, password, confirmPassword, gender);
 
         // Check for missing fields
         if (!fullName || !userName || !password || !confirmPassword || !gender) {
@@ -71,9 +72,13 @@ export const signup = async (req, res) => {
              await generateToken(newUser._id,res);
 
             await newUser.save();
+            console.log("User created");
             return res.json({ msg: "User created" });
         }
+        
         // Save the user to the database
+
+
     } catch (err) {
         console.log(err);
         return res.status(500).json({ msg: "Something went wrong" });
@@ -82,5 +87,11 @@ export const signup = async (req, res) => {
 
 export const logout = (req, res) => {
 
-    res.send("Logout");
+    try {
+		res.cookie("jwt", "", { maxAge: 0 });
+		res.status(200).json({ message: "Logged out successfully" });
+	} catch (error) {
+		console.log("Error in logout controller", error.message);
+		res.status(500).json({ error: "Internal Server Error" });
+	}
 };
